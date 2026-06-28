@@ -106,7 +106,7 @@ def save_remote_pool(path: str, data: list) -> None:
 
 
 def main():
-    count = int(sys.argv[1]) if len(sys.argv) > 1 else random.randint(1, 3)
+    count = int(sys.argv[1]) if len(sys.argv) > 1 else random.randint(3, 5)
     print(f"[{datetime.now(JST)}] 作成数: {count}個", flush=True)
 
     created = []
