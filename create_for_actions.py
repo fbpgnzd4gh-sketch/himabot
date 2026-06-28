@@ -28,16 +28,33 @@ HEADERS = {
 }
 
 
+SSH_ARGS = [
+    "-i", os.path.expanduser("~/.ssh/id_rsa"),
+    "-o", "StrictHostKeyChecking=no",
+    "-o", "ConnectTimeout=15",
+    "-o", "BatchMode=yes",
+]
+
+
 def ssh(cmd: str) -> str:
     r = subprocess.run(
-        ["ssh", "-i", os.path.expanduser("~/.ssh/id_rsa"),
-         "-o", "StrictHostKeyChecking=no",
-         "-o", "ConnectTimeout=15",
-         "-o", "BatchMode=yes",
-         f"{VPS_USER}@{VPS_HOST}", cmd],
+        ["ssh", *SSH_ARGS, f"{VPS_USER}@{VPS_HOST}", cmd],
         capture_output=True, text=True, timeout=30
     )
+    if r.returncode != 0:
+        print(f"  [ssh error] rc={r.returncode} stderr={r.stderr[:300]}", flush=True)
     return r.stdout.strip()
+
+
+def ssh_write(path: str, data: str) -> None:
+    r = subprocess.run(
+        ["ssh", *SSH_ARGS, f"{VPS_USER}@{VPS_HOST}", f"cat > {path}"],
+        input=data, capture_output=True, text=True, timeout=30
+    )
+    if r.returncode != 0:
+        print(f"  [ssh write error] rc={r.returncode} stderr={r.stderr[:300]}", flush=True)
+    else:
+        print(f"  [ssh write ok] {path}", flush=True)
 
 
 def get_current_ip(client) -> str:
@@ -85,9 +102,7 @@ def load_remote_pool(path: str) -> list:
 
 
 def save_remote_pool(path: str, data: list) -> None:
-    j = json.dumps(data, ensure_ascii=False)
-    j_escaped = j.replace("'", "'\\''")
-    ssh(f"echo '{j_escaped}' > {path}")
+    ssh_write(path, json.dumps(data, ensure_ascii=False))
 
 
 def main():
