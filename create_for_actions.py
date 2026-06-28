@@ -5,8 +5,10 @@ SSH経由でVPSのプールに追加する。
 """
 from __future__ import annotations
 import json, os, random, subprocess, sys, time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import httpx
+
+JST = timezone(timedelta(hours=9))
 
 BASE_URL = "https://api.find.nepopo.jp/2.0"
 APP_KEY = os.environ["HIMATALK_APP_KEY"]
@@ -47,7 +49,7 @@ def rand_name():
 
 
 def create_female(client, ip: str):
-    now = datetime.now().strftime("%Y%m%d%H%M")
+    now = datetime.now(JST).strftime("%Y%m%d%H%M")
     r1 = client.post(f"{BASE_URL}/user/register4.php", data={
         "app_key": APP_KEY, "app_secret": APP_SECRET, "lang": "ja-JP",
         "user_sex": "2", "user_name": rand_name(), "app_version": "2.4.0",
@@ -86,7 +88,7 @@ def save_remote_pool(path: str, data: list) -> None:
 
 def main():
     count = int(sys.argv[1]) if len(sys.argv) > 1 else random.randint(1, 3)
-    print(f"[{datetime.now()}] 作成数: {count}個", flush=True)
+    print(f"[{datetime.now(JST)}] 作成数: {count}個", flush=True)
 
     created = []
     with httpx.Client(timeout=30) as client:
