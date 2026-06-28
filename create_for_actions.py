@@ -30,8 +30,12 @@ HEADERS = {
 
 def ssh(cmd: str) -> str:
     r = subprocess.run(
-        ["ssh", "-o", "StrictHostKeyChecking=no", f"{VPS_USER}@{VPS_HOST}", cmd],
-        capture_output=True, text=True
+        ["ssh", "-i", os.path.expanduser("~/.ssh/id_rsa"),
+         "-o", "StrictHostKeyChecking=no",
+         "-o", "ConnectTimeout=15",
+         "-o", "BatchMode=yes",
+         f"{VPS_USER}@{VPS_HOST}", cmd],
+        capture_output=True, text=True, timeout=30
     )
     return r.stdout.strip()
 
