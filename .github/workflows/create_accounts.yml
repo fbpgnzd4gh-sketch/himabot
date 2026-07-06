@@ -2,7 +2,7 @@ name: Himatalk Account Creator
 
 on:
   schedule:
-    - cron: '*/5 * * * *'    # 5分ごとに実行
+    - cron: '*/15 * * * *'   # 15分ごとに実行
   workflow_dispatch:           # 手動実行も可能
 
 jobs:
