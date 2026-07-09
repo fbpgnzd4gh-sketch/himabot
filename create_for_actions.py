@@ -87,10 +87,10 @@ def create_female(client, ip: str):
     }, headers=HEADERS)
     print(f"  [activate]  {r2.status_code} {r2.text[:100]}", flush=True)
     d2 = r2.json()
-    uid, key = d2.get("uid"), d2.get("key")
-    if not uid or not key:
+    uid, key, secret = d2.get("uid"), d2.get("key"), d2.get("secret")
+    if not uid or not key or not secret:
         return None
-    return {"user_id": str(uid), "user_key": key, "sex": "2", "created_ip": ip}
+    return {"user_id": str(uid), "user_key": key, "user_secret": secret, "sex": "2", "created_ip": ip}
 
 
 def load_remote_pool(path: str) -> list:
