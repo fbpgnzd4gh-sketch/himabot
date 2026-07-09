@@ -17,6 +17,7 @@ VPS_HOST = os.environ["VPS_HOST"]
 VPS_USER = os.environ.get("VPS_USER", "root")
 POOL_A = "/root/himatalkbot_a/accounts.json"
 POOL_B = "/root/himatalkbot_b/accounts.json"
+POOL_C = "/root/himatalkbot_c/accounts.json"
 
 HEADERS = {
     "User-Agent": "%E3%81%B2%E3%81%BE%E3%83%88%E3%83%BC%E3%82%AF%EF%BC%8B/81 CFNetwork/1240.0.4 Darwin/20.6.0",
@@ -134,20 +135,20 @@ def main():
 
     pool_a = load_remote_pool(POOL_A)
     pool_b = load_remote_pool(POOL_B)
-    print(f"\nVPS現在: A={len(pool_a)}個 B={len(pool_b)}個", flush=True)
+    pool_c = load_remote_pool(POOL_C)
+    print(f"\nVPS現在: A={len(pool_a)}個 B={len(pool_b)}個 C={len(pool_c)}個", flush=True)
 
+    pools = {"A": pool_a, "B": pool_b, "C": pool_c}
     for acc in created:
-        if len(pool_a) <= len(pool_b):
-            pool_a.append(acc)
-            dest = "A"
-        else:
-            pool_b.append(acc)
-            dest = "B"
+        # 最も少ないプールに追加
+        dest = min(pools, key=lambda k: len(pools[k]))
+        pools[dest].append(acc)
         print(f"→ Bot {dest} に追加: uid={acc['user_id']}", flush=True)
 
     save_remote_pool(POOL_A, pool_a)
     save_remote_pool(POOL_B, pool_b)
-    print(f"\n完了: A={len(pool_a)}個 B={len(pool_b)}個", flush=True)
+    save_remote_pool(POOL_C, pool_c)
+    print(f"\n完了: A={len(pool_a)}個 B={len(pool_b)}個 C={len(pool_c)}個", flush=True)
 
 
 if __name__ == "__main__":
