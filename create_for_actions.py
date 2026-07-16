@@ -18,6 +18,7 @@ VPS_USER = os.environ.get("VPS_USER", "root")
 POOL_A = "/root/himatalkbot_a/accounts.json"
 POOL_B = "/root/himatalkbot_b/accounts.json"
 POOL_C = "/root/himatalkbot_c/accounts.json"
+COUNTER_FILE = "/root/himabot_round_robin.txt"
 
 HEADERS = {
     "User-Agent": "%E3%81%B2%E3%81%BE%E3%83%88%E3%83%BC%E3%82%AF%EF%BC%8B/81 CFNetwork/1240.0.4 Darwin/20.6.0",
@@ -140,14 +141,24 @@ def main():
 
     pools = {"A": pool_a, "B": pool_b, "C": pool_c}
     paths = {"A": POOL_A, "B": POOL_B, "C": POOL_C}
+    order = ["A", "B", "C"]
+
+    # ラウンドロビン用カウンタ読み込み
+    counter_raw = ssh(f"cat {COUNTER_FILE} 2>/dev/null || echo '0'")
+    try:
+        counter = int(counter_raw.strip())
+    except Exception:
+        counter = 0
+
     modified = set()
     for acc in created:
-        # 最も少ないプールに追加
-        dest = min(pools, key=lambda k: len(pools[k]))
+        dest = order[counter % 3]
         pools[dest].append(acc)
         modified.add(dest)
+        counter += 1
         print(f"→ Bot {dest} に追加: uid={acc['user_id']}", flush=True)
 
+    ssh_write(COUNTER_FILE, str(counter))
     for key in modified:
         save_remote_pool(paths[key], pools[key])
     print(f"\n完了: A={len(pool_a)}個 B={len(pool_b)}個 C={len(pool_c)}個", flush=True)
