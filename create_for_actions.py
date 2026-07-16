@@ -139,15 +139,17 @@ def main():
     print(f"\nVPS現在: A={len(pool_a)}個 B={len(pool_b)}個 C={len(pool_c)}個", flush=True)
 
     pools = {"A": pool_a, "B": pool_b, "C": pool_c}
+    paths = {"A": POOL_A, "B": POOL_B, "C": POOL_C}
+    modified = set()
     for acc in created:
         # 最も少ないプールに追加
         dest = min(pools, key=lambda k: len(pools[k]))
         pools[dest].append(acc)
+        modified.add(dest)
         print(f"→ Bot {dest} に追加: uid={acc['user_id']}", flush=True)
 
-    save_remote_pool(POOL_A, pool_a)
-    save_remote_pool(POOL_B, pool_b)
-    save_remote_pool(POOL_C, pool_c)
+    for key in modified:
+        save_remote_pool(paths[key], pools[key])
     print(f"\n完了: A={len(pool_a)}個 B={len(pool_b)}個 C={len(pool_c)}個", flush=True)
 
 
