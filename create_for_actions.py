@@ -141,7 +141,9 @@ def main():
 
     pools = {"A": pool_a, "B": pool_b, "C": pool_c}
     paths = {"A": POOL_A, "B": POOL_B, "C": POOL_C}
-    order = ["A", "B", "C"]
+    # 重み付け配分（1時間12回生成想定: A=2, B=5, C=5）
+    # スムーズ加重ラウンドロビンで均等に散らした12個の並び
+    order = ["B", "C", "A", "B", "C", "B", "C", "A", "B", "C", "B", "C"]
 
     # ラウンドロビン用カウンタ読み込み
     counter_raw = ssh(f"cat {COUNTER_FILE} 2>/dev/null || echo '0'")
@@ -152,7 +154,7 @@ def main():
 
     modified = set()
     for acc in created:
-        dest = order[counter % 3]
+        dest = order[counter % len(order)]
         pools[dest].append(acc)
         modified.add(dest)
         counter += 1
