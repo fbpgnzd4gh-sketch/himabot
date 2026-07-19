@@ -16,8 +16,8 @@ APP_SECRET = os.environ["HIMATALK_APP_SECRET"]
 VPS_HOST = os.environ["VPS_HOST"]
 VPS_USER = os.environ.get("VPS_USER", "root")
 POOL_A = "/root/himatalkbot_a/accounts.json"
-POOL_B = "/root/himatalkbot_b/accounts.json"
 POOL_C = "/root/himatalkbot_c/accounts.json"
+POOL_D = "/root/himatalkbot_d/accounts.json"
 COUNTER_FILE = "/root/himabot_round_robin.txt"
 
 HEADERS = {
@@ -135,15 +135,15 @@ def main():
         sys.exit(0)
 
     pool_a = load_remote_pool(POOL_A)
-    pool_b = load_remote_pool(POOL_B)
     pool_c = load_remote_pool(POOL_C)
-    print(f"\nVPS現在: A={len(pool_a)}個 B={len(pool_b)}個 C={len(pool_c)}個", flush=True)
+    pool_d = load_remote_pool(POOL_D)
+    print(f"\nVPS現在: A={len(pool_a)}個 C={len(pool_c)}個 D={len(pool_d)}個", flush=True)
 
-    pools = {"A": pool_a, "B": pool_b, "C": pool_c}
-    paths = {"A": POOL_A, "B": POOL_B, "C": POOL_C}
-    # 重み付け配分（1時間12回生成想定: A=2, B=5, C=5）
+    pools = {"A": pool_a, "C": pool_c, "D": pool_d}
+    paths = {"A": POOL_A, "C": POOL_C, "D": POOL_D}
+    # 重み付け配分（1時間12回生成想定: A=2, D=5, C=5。旧B枠はDに置き換え）
     # スムーズ加重ラウンドロビンで均等に散らした12個の並び
-    order = ["B", "C", "A", "B", "C", "B", "C", "A", "B", "C", "B", "C"]
+    order = ["D", "C", "A", "D", "C", "D", "C", "A", "D", "C", "D", "C"]
 
     # ラウンドロビン用カウンタ読み込み
     counter_raw = ssh(f"cat {COUNTER_FILE} 2>/dev/null || echo '0'")
@@ -163,7 +163,7 @@ def main():
     ssh_write(COUNTER_FILE, str(counter))
     for key in modified:
         save_remote_pool(paths[key], pools[key])
-    print(f"\n完了: A={len(pool_a)}個 B={len(pool_b)}個 C={len(pool_c)}個", flush=True)
+    print(f"\n完了: A={len(pool_a)}個 C={len(pool_c)}個 D={len(pool_d)}個", flush=True)
 
 
 if __name__ == "__main__":
